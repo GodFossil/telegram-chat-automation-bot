@@ -1,0 +1,11 @@
+# Telegram AI secretary setup
+
+1. Create a bot with @BotFather and enable Secretary Mode (also called Business Mode). Add its username under Telegram Settings → Chat Automation. Grant reply access only to a test chat with a consenting contact or your own second account.
+2. Use Node.js 20+. Run `npm install`, copy `.env.example` to `.env`, and set `BOT_TOKEN` and `TELEGRAM_OWNER_ID` (your numeric Telegram user ID). Leave `AUTO_REPLY=false` and start with `npm start`.
+3. In the test chat, open Manage Bot to obtain the chat ID from the bot. Add that ID to `ALLOWED_CHAT_IDS`. Comma-separate IDs if needed. An empty list allows none.
+4. Put your FreeLLMAPI bearer key in `LLM_API_KEY`, set `AUTO_REPLY=true`, and restart. By default the backend posts to `/v1/chat/completions` with `model: auto`. Send text from the test contact and expect a reply prefixed `Automated reply:`. Send a message manually from your own account, then have the contact send another: the bot should stay silent during the takeover cooldown.
+5. Use `/pause CHAT_ID`, `/resume CHAT_ID`, or `/reset CHAT_ID` in your private chat with the bot. Reset clears the saved transcript; it does not unpause the chat. Disable auto-replies globally with `AUTO_REPLY=false` and restart.
+
+Polling is the default. For a webhook deployment, set `WEBHOOK_URL` to the full public HTTPS URL ending in `/telegram`, and set a random `WEBHOOK_SECRET` (24–256 URL-safe characters). The server binds to `PORT` and exposes `GET /health`. Use one instance and a persistent volume for `DATA_FILE` if history and controls should survive redeploys. Do not run polling and webhooks together.
+
+This is a text-only scaffold. Enabled chats retain up to 12 recent text entries in the local state file and send that window to FreeLLMAPI to generate replies. Review the gateway's upstream routing and retention before enabling chats with other people. Do not commit `.env`, state files, keys, or private transcripts. No secrets are stored in this scaffold. Polling processes updates serially, so a manual takeover not yet received cannot cancel a reply already being generated. `npm run check` checks syntax; it does not test Telegram or FreeLLMAPI credentials.
