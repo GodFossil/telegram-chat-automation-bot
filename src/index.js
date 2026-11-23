@@ -242,7 +242,7 @@ bot.on('business_message', async ctx => {
     }
 
     stage = 'Telegram send';
-    await ctx.api.sendMessage(msg.chat.id, `Automated reply: ${reply}`, {
+    await ctx.api.sendMessage(msg.chat.id, reply, {
       business_connection_id: connectionId,
     });
     delivered = true;
